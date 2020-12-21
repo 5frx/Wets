@@ -1,0 +1,532 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width">
+    <title>Graph plotter</title>
+    <link href="style.css" rel="stylesheet" type="text/css" />
+
+    <style>
+
+
+      #line,#parabola {
+        display: none;
+      }
+      .navButtons {
+        background-color:red;
+        color:white;
+      }
+
+      .buttons {
+      	margin-top:520px;
+      	font-family:"Lucida Console",Monaco,monospace;
+      }
+      #upButton , #downButton{
+      	display: block;
+      	width: 100%
+      	border:none;
+      	padding:0px 7px;
+      	cursor:pointer;
+      	text-align: center;
+      }
+      #center{
+      	display: block;
+      	width: 100%
+      	border:none;
+      	display: block;
+      	width: 100%
+      	border:none;
+      	text-align:center;
+      }
+
+
+
+
+    </style>
+  </head>
+  <body>
+    <h1>Graph Plotter</h1>
+    <button type="button" onclick="plotGraph(y_camera,x_camera),setSin()">Plot Sine Wave</button>
+    <button type="button" onclick="plotParabola(y_camera,x_camera),setParabola(),showBoxesParabola()">Plot Parabola</button>
+    <button type="button" onclick="plotLine(y_camera,x_camera),setLine(),showBoxesLine()">Plot Line</button>
+
+<!Line parameters>
+    <div id="line">
+      <table>
+        <tr>
+          <td>
+            <p>slope:</p>
+          </td>
+          <td>
+            <input type="text" id="slope"></input>
+          </td>
+          <td>
+            <p>y-intercept:</p>
+          </td>
+          <td>
+            <input type="text" id="yIntercept"></input>
+          </td>
+          <td>
+            <button type="button" onclick="plotLine(y_camera,x_camera),setLine()">Update</button>
+          </td>
+        </tr>
+      </table>
+    </div>
+<!Parabola parameters>
+    <div id="parabola">
+      <table>
+        <tr>
+          <td>
+            <p>constant one:</p>
+          </td>
+          <td>
+            <input type="text" id="c"></input>
+          </td>
+          <td>
+            <p>y-shift</p>
+          </td>
+          <td>
+            <input type="text" id="yShift"></input>
+          </td>
+          <td>
+            <p>x-shift</p>
+          </td>
+          <td>
+            <input type="text" id="xShift"></input>
+          </td>
+          <td>
+            <button type="button" onclick="plotParabola(y_camera,x_camera),setParabola()">Update</button>
+          </td>
+        </tr>
+      </table>
+    </div>
+	<div style="position: relative;">
+    <canvas id="layer1" width="500" height="500" style="border:1px solid #c3c3c3; position: absolute; left: 0; top: 0; z-index: 0;">Your browser does not support the canvas element.</canvas>
+    <canvas id="layer2" width="500" height="500" style="border:1px solid #c3c3c3; position: absolute; left: 0; top: 0; z-index: 1;">Your browser does not support the canvas element.</canvas>
+    <canvas id="layer3" width="500" height="500" style="border:1px solid #c3c3c3; position: absolute; left: 0; top: 0; z-index: 2;">Your browser does not support the canvas element.</canvas>
+	</div>
+
+  <table>
+
+    <div class ="buttons">
+
+      <tr>
+        <td>
+        </td>
+        <td>
+        <button type="button" onclick="moveUp()" id="upButton" class="navButtons"> &uarr; </button>
+        </td>
+		<td>
+
+		</td>
+      </tr>
+      <tr>
+        <td>
+          <button type="button" onclick="moveRight()" class="navButtons"> &larr; </button>
+        </td>
+        <td>
+          <button type="button" onclick="resetPos()" id ="center" class="navButtons">O</button>
+        </td>
+        <td>
+          <button type="button" onclick="moveLeft()" class="navButtons"> &rarr;</button>
+      </tr>
+      <tr>
+        <td>
+
+        </td>
+        <td>
+          <button type="button" onclick="moveDown()" id="downButton" class="navButtons"> &darr; </button>
+        </td>
+
+      </tr>
+     </div>
+    </table>
+    <br>
+
+    <script>
+      var inputBoxesLine = document.getElementById("line");
+      var inputBoxesParabola = document.getElementById("parabola");
+      var layer1 = document.getElementById("layer1");
+      var layer2 = document.getElementById("layer2");
+      var layer3 = document.getElementById("layer3");
+      var l1 = layer1.getContext("2d");
+      var l2 = layer2.getContext("2d");
+      var l3 = layer3.getContext("2d");
+      var y_camera = 0;
+      var x_camera = 0;
+      var scale = 40;
+	    var wCurve = 'line';
+      document.getElementById('c').value = 1;
+      window.addEventListener('load',plotGrid(),plotAxises(y_camera,x_camera));
+
+      function showBoxesLine() {
+        console.log('showing boxes');
+        inputBoxesLine.style.display = "block";
+        if(inputBoxesParabola.style.display == "block"){
+          inputBoxesParabola.style.display = "none";
+        }
+      }
+      function showBoxesParabola() {
+        console.log('showing boxes');
+        inputBoxesParabola.style.display = "block";
+        if(inputBoxesLine.style.display == "block"){
+          inputBoxesLine.style.display = "none";
+        }
+      }
+
+      function clearScreen() {
+
+        l2.clearRect(0, 0, 500, 500);
+        l3.clearRect(0, 0, 500, 500);
+        console.log('clear');
+
+      }
+      function setSin(){
+      	wCurve = "sin";
+      }
+      function setLine(){
+      	wCurve = "line";
+      }
+      function setParabola(){
+      	wCurve = "parabola";
+      }
+      function clearGrid(){
+      	l1.clearRect(0,0,500,500);
+      	console.log('clear Grid');
+      }
+	  function resetPos(){
+	  	y_camera = 0;
+	  	x_camera = 0;
+	  	clearScreen();
+	  	if(wCurve == "sin"){
+	  		plotGraph(y_camera,x_camera);
+	  	} else if(wCurve =="parabola"){
+	  		plotParabola(y_camera,x_camera);
+	  	} else if(wCurve =="line"){
+	  		plotLine(y_camera,x_camera);
+	  	}else{
+
+	  	}
+
+	  	plotAxises(y_camera,x_camera);
+	  }
+      function moveUp() {
+        console.log(y_camera);
+        y_camera += scale;
+        console.log(y_camera);
+        clearScreen("l2");
+        clearScreen("l3");
+
+        if(wCurve == "sin"){
+	  		plotGraph(y_camera,x_camera);
+	  	} else if(wCurve =="parabola"){
+	  		plotParabola(y_camera,x_camera);
+	  	} else if(wCurve =="line"){
+	  		plotLine(y_camera,x_camera);
+	  	}else{
+
+	  	}
+        plotAxises(y_camera,x_camera);
+
+        console.log(y_camera);
+
+      }
+
+      function moveDown() {
+        console.log(y_camera);
+        y_camera -= scale;
+        console.log(y_camera);
+        clearScreen("l2");
+        clearScreen("l3");
+
+        if(wCurve == "sin"){
+	  		plotGraph(y_camera,x_camera);
+	  	} else if(wCurve =="parabola"){
+	  		plotParabola(y_camera,x_camera);
+	  	} else if(wCurve =="line"){
+	  		plotLine(y_camera,x_camera);
+	  	}else{
+
+	  	}
+        plotAxises(y_camera,x_camera);
+
+        console.log(y_camera);
+
+      }
+      function moveLeft() {
+        console.log(x_camera);
+        x_camera -= scale;
+        console.log(x_camera);
+        clearScreen("l2");
+        clearScreen("l3");
+
+
+        if(wCurve == "sin"){
+	  		plotGraph(y_camera,x_camera);
+	  	} else if(wCurve =="parabola"){
+	  		plotParabola(y_camera,x_camera);
+	  	} else if(wCurve =="line"){
+	  		plotLine(y_camera,x_camera);
+	  	}else{
+	  	}
+        plotAxises(y_camera,x_camera);
+
+        console.log(x_camera);
+
+      }
+      function moveRight() {
+        console.log(x_camera);
+        x_camera += scale;
+        console.log(x_camera);
+        clearScreen("l2");
+        clearScreen("l3");
+
+        if(wCurve == "sin"){
+	  		plotGraph(y_camera,x_camera);
+	  	} else if(wCurve =="parabola"){
+	  		plotParabola(y_camera,x_camera);
+	  	} else if(wCurve =="line"){
+	  		plotLine(y_camera,x_camera);
+	  	}else{
+
+	  	}
+        plotAxises(y_camera,x_camera);
+
+        console.log(x_camera);
+
+      }
+      /*
+      function upScale(){
+      	console.log("Up scaling");
+      	scale += 10;
+      	clearScreen();
+      	clearGrid();
+      	plotGraph(y_camera,x_camera);
+      	plotAxises(y_camera,x_camera);
+      	plotGrid();
+      }
+	  function downScale(){
+	  	scale -= 10;
+	  	console.log("Down Scaling");
+	  	clearScreen();
+      	clearGrid();
+      	plotGraph(y_camera,x_camera);
+      	plotAxises(y_camera,x_camera);
+      	plotGrid();
+	  }*/
+
+      function plotAxises(offset_y,offset_x){
+
+        console.log('draw axises');
+        //x-axis
+        l2.lineWidth = 3;
+        l2.strokeStyle = "#0000A0";
+        l2.beginPath();
+        l2.moveTo(0,240 + offset_y);
+        l2.lineTo(500,240 + offset_y);
+        l2.stroke();
+        /*while (i < 500){
+          ctx.fillStyle = "blue";
+          ctx.fillRect(i,250 + offset_y , 1, 1);
+          i++;
+        }*/
+
+        //y-axis
+
+        l2.beginPath();
+        l2.moveTo(240 + offset_x,0);
+        l2.lineTo(240 + offset_x,500);
+        l2.stroke();
+        /*
+        while (i < 500){
+          ctx.fillStyle = "blue";
+          ctx.fillRect(250 + offset_x,i , 1, 1);
+          i++;
+        }
+        */
+
+
+        //x axis numbering
+        var i = 0 - offset_x;
+        var x_value = -240/scale - offset_x/scale;
+        while (i < 500 + Math.abs(offset_x)){
+
+
+          if(i % scale == 0){
+
+            l2.font = "15px Arial";
+            l2.fillText( (x_value).toString() , i + offset_x, offset_y + 260);
+            x_value++;
+
+          }
+          i++;
+
+        }
+
+        //y axis numbering
+        var iy = 0 - offset_y;
+        var y_value = 240/scale + offset_y/scale;
+        while (iy < 500 + Math.abs(offset_y)){
+
+          if(iy % scale == 0){
+            l2.font = "15px Arial";
+            l2.fillText( (y_value).toString() , offset_x + 225, offset_y + iy - 2.5);
+            y_value--;
+          }
+          iy++;
+        }
+      }
+      /*
+      function parabola(x,k_one,k_two){
+          y = (x - k_two)**2 + k_one;
+      }
+      */
+      function plotGraph(offset_y,offset_x) {
+      	l3.clearRect(0,0,500,500);
+        console.log("draw graph");
+        var x, y, xcoord, ycoord, k_one,k_two,slope;
+        x = -500 - Math.abs(offset_x);
+        y = 0;
+        xcoord = 0;
+        ycoord = 0;
+
+        k_one = 0*scale;
+        k_two = 0*scale;
+        //ctx.fillStyle="red";
+        //ctx.fillRect(0,0,250,250);
+
+
+        while (x < 500 + Math.abs(offset_x)) {
+
+          console.log('plotting mini lines');
+          xcoord = (x + 240 + offset_x);
+          ycoord = (-1*(1600*Math.sin(x/40)/scale + k_one) + 240 + offset_y);
+          //get slope
+          //slope = (parabola(x+0.01) - parabola(x))/0.01;
+          l3.lineWidth = 2;
+          l3.strokeStyle = "blue";
+          l3.beginPath();
+          l3.moveTo(xcoord,ycoord);
+          l3.lineTo((x + 0.25 + 240 + offset_x),-1*((1600*Math.sin((x +0.25)/40))/scale + k_one) + 240 + offset_y);
+          l3.stroke();
+          x+=0.25;
+        }
+
+      }
+	function plotLine(offset_y,offset_x) {
+		l3.clearRect(0,0,500,500);
+        console.log("draw graph");
+        var x, y, xcoord, ycoord, k_one,k_two,slope;
+        x = -500 - Math.abs(offset_x);
+        y = 0;
+        xcoord = 0;
+        ycoord = 0;
+/*
+        if (document.getElementById('yIntercept').value == 0){
+          k_one = 0;
+        } else{
+          k_one = document.getElementById('yIntercept').value;
+        }*/
+        k_one = -(document.getElementById('yIntercept').value*scale);
+        //ctx.fillStyle="red";
+        //ctx.fillRect(0,0,250,250);
+
+        if (document.getElementById('slope').value == 0){
+          slope = 1;
+        } else{
+          slope = document.getElementById('slope').value;
+        }
+
+        while (x < 500 + Math.abs(offset_x)) {
+
+          console.log('plotting mini lines');
+          xcoord = (x + 240 + offset_x);
+          ycoord = -slope*(x) + 240 + offset_y + k_one;
+          //get slope
+          //slope = (parabola(x+0.01) - parabola(x))/0.01;
+          l3.lineWidth = 2;
+          l3.strokeStyle = "blue";
+          l3.beginPath();
+          l3.moveTo(xcoord,ycoord);
+          l3.lineTo((x + 0.25 + 240 + offset_x),-slope*(x+0.25) + 240 + offset_y + k_one);
+          l3.stroke();
+          x+=0.25;
+        }
+
+      }
+
+
+      function plotGrid(){
+        l1.lineWidth = 1;
+        l1.strokeStyle = "#00FFFF";
+        var times_plotted_x = 0;
+        while (times_plotted_x < 500){
+          if (times_plotted_x % scale == 0){
+
+
+            l1.moveTo(0 , times_plotted_x);
+            l1.lineTo(500, times_plotted_x);
+            l1.stroke();
+          }
+          times_plotted_x++;
+        }
+        var times_plotted_y = 0;
+
+        while (times_plotted_y < 500){
+          if (times_plotted_y % scale == 0){
+
+
+            l1.moveTo(times_plotted_y, 0);
+            l1.lineTo(times_plotted_y, 500);
+            l1.stroke()
+          }
+          times_plotted_y++;
+        }
+
+
+      }
+  function changeParameters(parameter,new_parameter){
+    parameter = new_parameter;
+  }
+	function plotParabola(offset_y,offset_x) {
+		l3.clearRect(0,0,500,500);
+        console.log("draw graph");
+        var x, y, xcoord, ycoord, k_one,k_two,slope,c;
+        x = -500 - Math.abs(offset_x);
+        y = 0;
+        xcoord = 0;
+        ycoord = 0;
+        c = (document.getElementById('c').value);
+        k_one = -1*document.getElementById("yShift").value*scale;
+        k_two = document.getElementById("xShift").value*scale;
+        //ctx.fillStyle="red";
+        //ctx.fillRect(0,0,250,250);
+
+
+        while (x < 500 + Math.abs(offset_x)) {
+
+          console.log('plotting mini lines');
+          xcoord = (x + 240 + offset_x);
+          ycoord = (-c*(Math.pow(x-k_two,2)/scale) + 240 + offset_y + k_one);
+          //get slope
+          //slope = (parabola(x+0.01) - parabola(x))/0.01;
+          l3.lineWidth = 2;
+          l3.strokeStyle = "blue";
+          l3.beginPath();
+          l3.moveTo(xcoord,ycoord);
+          l3.lineTo((x + 0.25 + 240 + offset_x),-c*(Math.pow(x+0.25-k_two,2)/scale) + 240 + offset_y + k_one);
+          l3.stroke();
+          x+=0.25;
+        }
+
+      }
+
+      function drawScreen(y_camera,x_camera){
+          plotGraph(y_camera,x_camera);
+          plotAxises(y_camera,x_camera);
+          plotGrid();
+      }
+
+    </script>
+  </body>
+</html>
